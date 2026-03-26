@@ -6,7 +6,6 @@
   <title>Draft EIR Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -16,7 +15,7 @@
       --surface2:  #222228;
       --border:    #2e2e38;
       --accent:    #1a56db;
-      --accent-dim:#1e3a6e;
+      --accent-dim:#1a3a7a;
       --text:      #e8e8f0;
       --muted:     #7a7a90;
       --user-bg:   #1a56db;
@@ -58,12 +57,12 @@
     .gate-logo {
       width: 42px; height: 42px;
       background: var(--accent);
-      border-radius: 12px;
+      border-radius: 50%;
       margin-bottom: 1.5rem;
       display: flex; align-items: center; justify-content: center;
     }
 
-    .gate-logo svg { width: 22px; height: 22px; fill: white; }
+    .gate-logo svg { width: 20px; height: 20px; fill: white; }
 
     .gate-card h1 {
       font-size: 1.3rem;
@@ -89,7 +88,7 @@
       margin-bottom: .5rem;
     }
 
-    .gate-card input[type="password"] {
+    .gate-card input {
       width: 100%;
       padding: .75rem 1rem;
       background: var(--bg);
@@ -103,7 +102,7 @@
       margin-bottom: 1rem;
     }
 
-    .gate-card input[type="password"]:focus {
+    .gate-card input:focus {
       border-color: var(--accent);
     }
 
@@ -123,6 +122,7 @@
 
     .btn-primary:hover { opacity: .9; }
     .btn-primary:active { transform: scale(.98); }
+    .btn-primary:disabled { opacity: .5; cursor: default; }
 
     .gate-error {
       font-size: .8rem;
@@ -176,6 +176,12 @@
       border-radius: 6px;
     }
 
+    .header-user {
+      font-size: .75rem;
+      font-family: var(--mono);
+      color: var(--muted);
+    }
+
     /* ── Messages ─────────────────────────────── */
     #messages {
       flex: 1;
@@ -224,7 +230,6 @@
       border-radius: var(--radius);
       font-size: .9rem;
       line-height: 1.65;
-      white-space: pre-wrap;
       word-break: break-word;
     }
 
@@ -239,21 +244,38 @@
       background: var(--user-bg);
       color: var(--user-text);
       border-top-right-radius: 4px;
+      white-space: pre-wrap;
     }
 
-    .bubble.bot strong { font-weight: 500; }
+    /* Markdown rendering */
+    .bubble.bot p { margin-bottom: .5rem; }
+    .bubble.bot p:last-child { margin-bottom: 0; }
+    .bubble.bot ul, .bubble.bot ol { padding-left: 1.25rem; margin-bottom: .5rem; }
+    .bubble.bot li { margin-bottom: .2rem; }
+    .bubble.bot strong { font-weight: 600; color: #fff; }
     .bubble.bot h1, .bubble.bot h2, .bubble.bot h3 {
-      font-size: 1rem; font-weight: 500; margin: .5rem 0 .25rem;
+      font-weight: 600; margin-bottom: .4rem; color: #fff;
     }
-    .bubble.bot ul, .bubble.bot ol {
-      padding-left: 1.25rem; margin: .25rem 0;
-    }
-    .bubble.bot li { margin: .15rem 0; }
-    .bubble.bot p { margin: .25rem 0; }
+    .bubble.bot h1 { font-size: 1rem; }
+    .bubble.bot h2 { font-size: .95rem; }
+    .bubble.bot h3 { font-size: .9rem; }
     .bubble.bot code {
-      font-family: var(--mono); font-size: .82rem;
-      background: var(--bg); padding: .1rem .3rem; border-radius: 4px;
+      font-family: var(--mono);
+      background: var(--bg);
+      padding: .1rem .35rem;
+      border-radius: 4px;
+      font-size: .82rem;
     }
+    .bubble.bot pre {
+      background: var(--bg);
+      padding: .75rem 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-bottom: .5rem;
+    }
+    .bubble.bot pre code { background: none; padding: 0; }
+
+    /* Typing indicator */
     .typing-dots {
       display: flex; gap: 4px; align-items: center;
       padding: .25rem 0;
@@ -283,21 +305,21 @@
     }
 
     #empty-state .big-icon {
-      width: 56px; height: 56px;
-      background: var(--accent-dim);
-      border: 1px solid var(--accent);
+      width: 48px; height: 48px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
     }
 
-    #empty-state .big-icon svg { width: 26px; height: 26px; }
+    #empty-state .big-icon svg { width: 22px; height: 22px; }
 
     #empty-state h2 { font-size: 1rem; font-weight: 500; color: var(--text); }
     #empty-state p  { font-size: .85rem; line-height: 1.5; max-width: 280px; }
 
     .suggestion-chips {
       display: flex; flex-direction: column; gap: .5rem;
-      align-items: center; margin-top: .5rem; width: 100%;
+      align-items: center; margin-top: .5rem; width: 100%; max-width: 420px;
     }
 
     .chip {
@@ -333,7 +355,7 @@
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: .5rem .5rem .5rem 1rem;
+      padding: .6rem .6rem .6rem 1rem;
       transition: border-color .2s;
     }
 
@@ -347,9 +369,8 @@
       color: var(--text);
       font-family: var(--font);
       font-size: .9rem;
-      line-height: 1.5;
       padding: 0;
-      width: 100%;
+      vertical-align: middle;
     }
 
     #user-input::placeholder { color: var(--muted); }
@@ -371,10 +392,10 @@
     #send-btn svg { width: 16px; height: 16px; fill: white; }
 
     .input-hint {
-      font-size: .72rem;
+      font-size: .7rem;
       color: var(--muted);
       margin-top: .5rem;
-      padding-left: .25rem;
+      text-align: center;
     }
 
     /* ── Animations ───────────────────────────── */
@@ -395,15 +416,21 @@
 <div id="gate">
   <div class="gate-card">
     <div class="gate-logo">
-      <svg viewBox="0 0 24 24" fill="white"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+      <!-- Lock icon -->
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 10h-1V7a5 5 0 0 0-10 0v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zm-6 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-7H9V7a3 3 0 0 1 6 0v3z"/>
+      </svg>
     </div>
     <h1>Draft EIR Agent</h1>
-    <p>Enter your team password to access the assistant.</p>
+    <p>Enter your credentials to access the assistant.</p>
+    <label for="username-input">Username</label>
+    <input type="text" id="username-input" placeholder="username" autocomplete="username"
+      onkeydown="if(event.key==='Enter') document.getElementById('pw-input').focus()">
     <label for="pw-input">Password</label>
-    <input type="password" id="pw-input" placeholder="••••••••" autofocus
+    <input type="password" id="pw-input" placeholder="••••••••" autocomplete="current-password"
       onkeydown="if(event.key==='Enter') checkPassword()">
-    <button class="btn-primary" onclick="checkPassword()">Continue</button>
-    <p class="gate-error" id="pw-error">Incorrect password — try again.</p>
+    <button class="btn-primary" id="login-btn" onclick="checkPassword()">Continue</button>
+    <p class="gate-error" id="pw-error">Incorrect username or password — try again.</p>
   </div>
 </div>
 
@@ -412,14 +439,15 @@
   <header>
     <div class="header-dot"></div>
     <h1>Draft EIR Agent</h1>
+    <span class="header-user" id="header-user"></span>
     <span class="header-badge">Claude</span>
   </header>
 
   <div id="messages">
     <div id="empty-state">
       <div class="big-icon">
-        <svg viewBox="0 0 24 24" fill="white">
-          <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M8 10h8M8 14h5M12 3c-4.97 0-9 3.58-9 8 0 1.87.67 3.6 1.79 4.99L3 21l4.7-1.5A9.27 9.27 0 0 0 12 21c4.97 0 9-3.58 9-8s-4.03-8-9-8z" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
       <h2>How can I help?</h2>
@@ -435,45 +463,84 @@
   <div id="input-bar">
     <div class="input-wrap">
       <input type="text" id="user-input" placeholder="Type here"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage()}">
+        onkeydown="if(event.key==='Enter') sendMessage()">
       <button id="send-btn" onclick="sendMessage()" title="Send">
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
-    <p class="input-hint">Enter to send &nbsp;·&nbsp; Shift+Enter for new line</p>
+    <p class="input-hint">Press Enter to send</p>
   </div>
 </div>
 
 <script>
-  // *** CHANGE THESE TWO VALUES ***
-  const BACKEND_URL = "https://agent-backend.onrender.com";
-  const PASSWORD    = "mixeduse";
+  const BACKEND_URL = "https://agent-backend-4u94.onrender.com";
 
   let history = [];
+  let currentUser = "";
 
-  // ── Auth ──────────────────────────────────────
-  function checkPassword() {
-    const val = document.getElementById("pw-input").value;
-    if (val === PASSWORD) {
-      document.getElementById("gate").style.display = "none";
-      document.getElementById("app").style.display  = "flex";
-      document.getElementById("user-input").focus();
-    } else {
-      const err = document.getElementById("pw-error");
+  async function checkPassword() {
+    const username = document.getElementById("username-input").value.trim();
+    const password = document.getElementById("pw-input").value;
+    const btn = document.getElementById("login-btn");
+    const err = document.getElementById("pw-error");
+
+    if (!username || !password) return;
+
+    btn.disabled = true;
+    btn.textContent = "Checking…";
+    err.style.display = "none";
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        currentUser = username;
+        document.getElementById("header-user").textContent = username;
+        document.getElementById("gate").style.display = "none";
+        document.getElementById("app").style.display = "flex";
+        document.getElementById("user-input").focus();
+      } else {
+        err.style.display = "block";
+        document.getElementById("pw-input").value = "";
+        document.getElementById("pw-input").focus();
+        btn.disabled = false;
+        btn.textContent = "Continue";
+      }
+    } catch (e) {
+      err.textContent = "Could not reach the server — try again in 30 seconds.";
       err.style.display = "block";
-      document.getElementById("pw-input").value = "";
-      document.getElementById("pw-input").focus();
+      btn.disabled = false;
+      btn.textContent = "Continue";
     }
   }
 
-  // ── Suggestion chips ──────────────────────────
   function useChip(el) {
     const input = document.getElementById("user-input");
     input.value = el.textContent;
     input.focus();
   }
 
-  // ── Render a message row ──────────────────────
+  function renderMarkdown(text) {
+    return text
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+      .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+      .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/^\s*[-*]\s+(.+)$/gm, "<li>$1</li>")
+      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+      .replace(/\n\n/g, "</p><p>")
+      .replace(/^(?!<[hul]|<\/[hul]|<li)(.+)$/gm, (m) => m.startsWith("<") ? m : m)
+      .replace(/^(.+)$(?!\n)/gm, (m) => m);
+  }
+
   function addMessage(role, content) {
     const empty = document.getElementById("empty-state");
     if (empty) empty.remove();
@@ -483,7 +550,7 @@
 
     const av = document.createElement("div");
     av.className = `avatar ${role === "user" ? "user-av" : "bot"}`;
-    av.textContent = role === "user" ? "You" : "AI";
+    av.textContent = role === "user" ? (currentUser ? currentUser.slice(0,2).toUpperCase() : "You") : "AI";
 
     const bubble = document.createElement("div");
     bubble.className = `bubble ${role === "user" ? "user" : "bot"}`;
@@ -491,7 +558,7 @@
     if (content === "typing") {
       bubble.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
     } else if (role === "assistant") {
-      bubble.innerHTML = marked.parse(content);
+      bubble.innerHTML = `<p>${renderMarkdown(content)}</p>`;
     } else {
       bubble.textContent = content;
     }
@@ -500,10 +567,9 @@
     row.appendChild(bubble);
     document.getElementById("messages").appendChild(row);
     row.scrollIntoView({ behavior: "smooth", block: "end" });
-    return { row, bubble };
+    return row;
   }
 
-  // ── Send ──────────────────────────────────────
   async function sendMessage() {
     const input = document.getElementById("user-input");
     const btn   = document.getElementById("send-btn");
@@ -514,13 +580,13 @@
     btn.disabled = true;
 
     addMessage("user", text);
-    const { row: typingRow } = addMessage("assistant", "typing");
+    const typingRow = addMessage("assistant", "typing");
 
     try {
       const res = await fetch(`${BACKEND_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history })
+        body: JSON.stringify({ message: text, history, username: currentUser })
       });
 
       if (!res.ok) throw new Error(`Server error ${res.status}`);
