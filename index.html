@@ -196,33 +196,22 @@
 
     .msg-row {
       display: flex;
-      gap: .75rem;
+      flex-direction: column;
       animation: fadeUp .25s ease both;
     }
 
-    .msg-row.user { flex-direction: row-reverse; }
+    .msg-row.user { align-items: flex-end; }
+    .msg-row.assistant { align-items: flex-start; }
 
-    .avatar {
-      width: 30px; height: 30px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .7rem;
+    .msg-name {
+      font-size: .72rem;
       font-weight: 500;
-      margin-top: 2px;
-    }
-
-    .avatar.bot {
-      background: var(--accent-dim);
-      color: var(--accent);
-      border: 1px solid var(--accent-dim);
-    }
-
-    .avatar.user-av {
-      background: var(--surface2);
       color: var(--muted);
-      border: 1px solid var(--border);
+      margin-bottom: .3rem;
+      padding: 0 .25rem;
     }
+
+    .msg-row.user .msg-name { color: #9aa8c7; }
 
     .bubble {
       max-width: 78%;
@@ -546,11 +535,11 @@
     if (empty) empty.remove();
 
     const row = document.createElement("div");
-    row.className = `msg-row ${role}`;
+    row.className = `msg-row ${role === "user" ? "user" : "assistant"}`;
 
-    const av = document.createElement("div");
-    av.className = `avatar ${role === "user" ? "user-av" : "bot"}`;
-    av.textContent = role === "user" ? (currentUser ? currentUser.slice(0,2).toUpperCase() : "You") : "AI";
+    const name = document.createElement("div");
+    name.className = "msg-name";
+    name.textContent = role === "user" ? (currentUser || "You") : "Claude";
 
     const bubble = document.createElement("div");
     bubble.className = `bubble ${role === "user" ? "user" : "bot"}`;
@@ -563,7 +552,7 @@
       bubble.textContent = content;
     }
 
-    row.appendChild(av);
+    row.appendChild(name);
     row.appendChild(bubble);
     document.getElementById("messages").appendChild(row);
     row.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -598,7 +587,7 @@
 
     } catch (err) {
       typingRow.remove();
-      addMessage("assistant", "Sorry, I couldn't reach the server. If this is your first message in a while, Render may be waking up — please try again in 30 seconds.");
+      addMessage("assistant", "Sorry, I can't reach the server. Try again in 30 seconds or message Jen.");
     }
 
     btn.disabled = false;
