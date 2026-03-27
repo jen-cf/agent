@@ -237,17 +237,22 @@
     }
 
     /* Markdown rendering */
-    .bubble.bot p { margin-bottom: .5rem; }
+    .bubble.bot p { margin-bottom: .6rem; }
     .bubble.bot p:last-child { margin-bottom: 0; }
-    .bubble.bot ul, .bubble.bot ol { padding-left: 1.25rem; margin-bottom: .5rem; }
-    .bubble.bot li { margin-bottom: .2rem; }
+    .bubble.bot ul, .bubble.bot ol { padding-left: 1.25rem; margin-bottom: .6rem; margin-top: .2rem; }
+    .bubble.bot li { margin-bottom: .25rem; }
     .bubble.bot strong { font-weight: 600; color: #fff; }
     .bubble.bot h1, .bubble.bot h2, .bubble.bot h3 {
-      font-weight: 600; margin-bottom: .4rem; color: #fff;
+      font-weight: 600; color: #fff;
+      margin-top: 1.1rem; margin-bottom: .35rem;
+      padding-left: 0;
     }
     .bubble.bot h1 { font-size: 1rem; }
     .bubble.bot h2 { font-size: .95rem; }
     .bubble.bot h3 { font-size: .9rem; }
+    .bubble.bot h1:first-child,
+    .bubble.bot h2:first-child,
+    .bubble.bot h3:first-child { margin-top: 0; }
     .bubble.bot code {
       font-family: var(--mono);
       background: var(--bg);
@@ -263,6 +268,34 @@
       margin-bottom: .5rem;
     }
     .bubble.bot pre code { background: none; padding: 0; }
+
+    /* Follow-up suggestions */
+    .followup-chips {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      margin-top: .75rem;
+    }
+
+    .followup-chip {
+      font-size: .78rem;
+      padding: .4rem .85rem;
+      background: var(--surface);
+      border: 1px solid var(--accent-dim);
+      border-radius: 999px;
+      cursor: pointer;
+      color: #9ab0e8;
+      transition: border-color .15s, background .15s, color .15s;
+      text-align: left;
+      display: inline-block;
+      align-self: flex-start;
+    }
+
+    .followup-chip:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      color: white;
+    }
 
     /* Typing indicator */
     .typing-dots {
@@ -467,6 +500,49 @@
   let history = [];
   let currentUser = "";
 
+  async function getFollowUps(question, answer) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `Based on this question: "${question}" and this answer: "${answer.slice(0, 800)}", suggest exactly 2-3 short follow-up questions a user might want to ask next. Return ONLY a JSON array of strings, no other text. Example: ["Question 1?", "Question 2?", "Question 3?"]`,
+          history: [],
+          username: currentUser
+        })
+      });
+      const data = await res.json();
+      const text = data.reply.trim();
+      const clean = text.replace(/```json|```/g, "").trim();
+      return JSON.parse(clean);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function addFollowUps(suggestions) {
+    if (!suggestions || suggestions.length === 0) return;
+    const msgs = document.getElementById("messages");
+    const wrap = document.createElement("div");
+    wrap.className = "msg-row assistant";
+    const chips = document.createElement("div");
+    chips.className = "followup-chips";
+    suggestions.forEach(q => {
+      const chip = document.createElement("button");
+      chip.className = "followup-chip";
+      chip.textContent = q;
+      chip.onclick = () => {
+        wrap.remove();
+        document.getElementById("user-input").value = q;
+        sendMessage();
+      };
+      chips.appendChild(chip);
+    });
+    wrap.appendChild(chips);
+    msgs.appendChild(wrap);
+    wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+  }
+
   async function checkPassword() {
     const username = document.getElementById("username-input").value.trim();
     const password = document.getElementById("pw-input").value;
@@ -584,6 +660,8 @@
       typingRow.remove();
       addMessage("assistant", data.reply);
       history = data.history;
+      const followUps = await getFollowUps(text, data.reply);
+      addFollowUps(followUps);
 
     } catch (err) {
       typingRow.remove();
